@@ -718,7 +718,7 @@ DEPENDENCIES
   brakeman
   byebug
   climate_control
-  google-cloud-discovery_engine-v1beta (<= 0.20.1)
+  google-cloud-discovery_engine-v1beta
   google-cloud-storage
   govuk_app_config
   govuk_test

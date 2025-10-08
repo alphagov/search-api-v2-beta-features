@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gem "rails", "8.0.1"
 
 gem "bootsnap"
-gem "google-cloud-discovery_engine-v1beta", "<= 0.20.1"
+gem "google-cloud-discovery_engine-v1beta"
 gem "google-cloud-storage"
 gem "govuk_app_config"
 gem "plek"
