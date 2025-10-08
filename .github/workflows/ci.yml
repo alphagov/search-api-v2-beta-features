@@ -1,39 +1,58 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'The branch, tag or SHA to checkout'
+        default: main
+        type: string
 
 jobs:
-  scan_ruby:
+  codeql-sast:
+    name: CodeQL SAST scan
+    uses: alphagov/govuk-infrastructure/.github/workflows/codeql-analysis.yml@main
+    permissions:
+      security-events: write
+
+  dependency-review:
+    name: Dependency Review scan
+    uses: alphagov/govuk-infrastructure/.github/workflows/dependency-review.yml@main
+
+  lint-ruby:
+    name: Lint Ruby
+    uses: alphagov/govuk-infrastructure/.github/workflows/rubocop.yml@main
+
+  security-analysis:
+    name: Security Analysis
+    uses: alphagov/govuk-infrastructure/.github/workflows/brakeman.yml@main
+    secrets: inherit
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+  test-ruby:
+    name: Test Ruby / Run RSpec
     runs-on: ubuntu-latest
-
+    env:
+      # As we're running the tests through Rake, we need to make sure they are run in the `test`
+      # Rails env rather than `development`
+      RAILS_ENV: test
+      # All Google client library calls are mocked, but the application needs this set to boot
+      GOOGLE_CLOUD_PROJECT_ID: not-used
+      GOOGLE_CLOUD_PROJECT_ID_NUMBER: not-used
+      DISCOVERY_ENGINE_DEFAULT_COLLECTION_NAME: not-used
+      DISCOVERY_ENGINE_DEFAULT_LOCATION_NAME: not-used
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@v4
         with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+          ref: ${{ inputs.ref || github.ref }}
+          show-progress: false
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
           bundler-cache: true
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-
