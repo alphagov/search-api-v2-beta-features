@@ -6,6 +6,16 @@ RSpec.describe DiscoveryEngine::Quality::PartitionDate do
       Timecop.freeze(1987, 1, 8) { example.call }
     end
 
+    context "with a month label of :this_month" do
+      let(:month_label) { :this_month }
+      let(:month) { nil }
+      let(:year) { nil }
+
+      it "returns a Date object for the first day of this month" do
+        expect(partition_date.calculate(month_label:, month:, year:)).to eq(Date.new(1987, 1, 1))
+      end
+    end
+
     context "with a month label of :last_month" do
       let(:month_label) { :last_month }
       let(:month) { nil }
@@ -13,16 +23,6 @@ RSpec.describe DiscoveryEngine::Quality::PartitionDate do
 
       it "returns a Date object for the first day of last month" do
         expect(partition_date.calculate(month_label:, month:, year:)).to eq(Date.new(1986, 12, 1))
-      end
-    end
-
-    context "with a month label of :month_before_last" do
-      let(:month_label) { :month_before_last }
-      let(:month) { nil }
-      let(:year) { nil }
-
-      it "returns a Date object for the first day of the month before last" do
-        expect(partition_date.calculate(month_label:, month:, year:)).to eq(Date.new(1986, 11, 1))
       end
     end
 
