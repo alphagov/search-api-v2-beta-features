@@ -21,3 +21,4 @@ COPY --from=builder $BOOTSNAP_CACHE_DIR $BOOTSNAP_CACHE_DIR
 COPY --from=builder $APP_HOME .
 
 USER app
+CMD ["puma"]
