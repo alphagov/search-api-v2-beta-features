@@ -186,7 +186,10 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
         end
 
         it "raises FailedEvaluationError" do
-          expect { evaluation.quality_metrics }.to raise_error(DiscoveryEngine::Quality::FailedEvaluationError)
+          expect { evaluation.quality_metrics }.to raise_error(
+            DiscoveryEngine::Quality::FailedEvaluationError,
+            "Evaluation of clickstream 2025-10 failed",
+          )
         end
       end
 
