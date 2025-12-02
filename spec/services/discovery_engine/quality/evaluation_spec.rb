@@ -180,6 +180,16 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
         end
       end
 
+      context "when the evaluation completes and has a state of :FAILED" do
+        before do
+          allow(new_evaluation).to receive(:state).and_return(:FAILED)
+        end
+
+        it "raises FailedEvaluationError" do
+          expect { evaluation.quality_metrics }.to raise_error(DiscoveryEngine::Quality::FailedEvaluationError)
+        end
+      end
+
       context "when the evaluation is still being processed and has a state of :PENDING" do
         before do
           allow(new_evaluation).to receive(:state).and_return(:PENDING, :SUCCEEDED)

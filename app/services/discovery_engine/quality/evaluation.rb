@@ -1,4 +1,6 @@
 module DiscoveryEngine::Quality
+  class FailedEvaluationError < StandardError; end
+
   class Evaluation
     MAX_RETRIES = 5
     WAIT_TIME = 60
@@ -129,6 +131,7 @@ module DiscoveryEngine::Quality
 
       while (e = get_evaluation(name))
         return e if e.state == :SUCCEEDED
+        raise FailedEvaluationError if e.state == :FAILED
 
         Rails.logger.info("Still waiting for evaluation to complete...")
         Kernel.sleep(WAIT_TIME)
