@@ -57,6 +57,7 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
   before do
     allow(DiscoveryEngine::Clients).to receive(:evaluation_service).and_return(evaluation_service)
     allow(Rails.logger).to receive(:info)
+    allow(Rails.logger).to receive(:error)
     allow(Kernel).to receive(:sleep).and_return(true)
   end
 
@@ -115,15 +116,14 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
             .to receive(:create_evaluation)
             .with(anything)
             .and_raise(Google::Cloud::AlreadyExistsError)
-
-          allow(GovukError).to receive(:notify)
         end
 
         it "sleeps for 60 seconds, retries a maximum of 5 times, then raises an error" do
           expect { evaluation.quality_metrics }.to raise_error("Google::Cloud::AlreadyExistsError")
           expect(evaluation_service).to have_received(:create_evaluation).exactly(5).times
           expect(Kernel).to have_received(:sleep).with(60).exactly(4).times
-          expect(GovukError).to have_received(:notify)
+
+          expect(Rails.logger).to have_received(:error)
             .with("No evaluation created of sample set clickstream 2025-10")
         end
       end
