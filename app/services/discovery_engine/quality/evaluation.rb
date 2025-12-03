@@ -129,6 +129,7 @@ module DiscoveryEngine::Quality
 
       while (e = get_evaluation(name))
         return e if e.state == :SUCCEEDED
+        raise FailedEvaluationError, sample_set.display_name if e.state == :FAILED
 
         Rails.logger.info("Still waiting for evaluation to complete...")
         Kernel.sleep(WAIT_TIME)
