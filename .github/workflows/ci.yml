@@ -49,7 +49,7 @@ jobs:
       DISCOVERY_ENGINE_DEFAULT_COLLECTION_NAME: not-used
       DISCOVERY_ENGINE_DEFAULT_LOCATION_NAME: not-used
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.ref }}
           show-progress: false
