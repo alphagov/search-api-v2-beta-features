@@ -120,7 +120,7 @@ module DiscoveryEngine::Quality
         retry
       end
 
-      GovukError.notify("No evaluation created of sample set #{sample_set.display_name}")
+      Rails.logger.error("No evaluation created of sample set #{sample_set.display_name}")
       raise e
     end
 
