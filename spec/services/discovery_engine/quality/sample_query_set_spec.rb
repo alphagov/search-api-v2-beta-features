@@ -7,7 +7,15 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
     allow(DiscoveryEngine::Clients).to receive_messages(sample_query_set_service: sample_query_set_service_stub, sample_query_service: sample_query_service_stub)
   end
 
-  let(:sample_query_set_service_stub) { double("sample_query_set_service", create_sample_query_set: nil) }
+  let(:response_object) do
+    {
+      "name": "projects/123/locations/global/sampleQuerySets/clickstream 2025-10",
+      "displayName": "clickstream 2025-10",
+      "createTime": "a-time-stamp"
+    }
+  end
+
+  let(:sample_query_set_service_stub) { double("sample_query_set_service", create_sample_query_set: nil, get_sample_query_set: response_object) }
   let(:sample_query_service_stub) { double("sample_query_service", import_sample_queries: operation_object) }
   let(:operation_object) { double("operation", wait_until_done!: true, error?: false) }
   let(:table_id) { "clickstream" }
@@ -64,6 +72,7 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
             .with(anything)
             .and_raise(Google::Cloud::AlreadyExistsError)
 
+          allow(erroring_service).to receive(:get_sample_query_set)
           allow(Rails.logger).to receive(:warn)
         end
 
