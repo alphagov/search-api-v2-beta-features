@@ -14,7 +14,7 @@ module DiscoveryEngine
 
       def create_and_import_queries
         create_set
-        import_queries
+        import_queries if set_exists?
       end
 
       def name
@@ -50,6 +50,19 @@ module DiscoveryEngine
           )
       rescue Google::Cloud::AlreadyExistsError
         Rails.logger.warn("SampleQuerySet #{display_name} already exists. Skipping query set creation...")
+      end
+
+      def set_exists?
+        begin
+          set =
+            DiscoveryEngine::Clients
+              .sample_query_set_service
+              .get_sample_query_set(name: name)
+        rescue Google::Cloud::NotFoundError => e
+          Rails.logger.error("SampleQuerySet #{display_name} was not created successfully")
+          raise e
+        end
+        set.present?
       end
 
       def import_queries
