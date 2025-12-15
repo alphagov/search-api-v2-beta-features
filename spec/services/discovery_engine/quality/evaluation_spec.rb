@@ -178,6 +178,32 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
             .with(name: new_evaluation.name)
             .once
         end
+
+        context "when quality_metrics is empty" do
+          let(:evaluation_service) { double("evaluation_service", create_evaluation: operation, get_evaluation: empty_metrics_evaluation) }
+          let(:empty_metrics_evaluation_name) { "/evaluations/2" }
+          let(:empty_metrics_evaluation) do
+            double("evaluation",
+                   state: :SUCCEEDED,
+                   quality_metrics: empty_quality_metrics_response,
+                   name: empty_metrics_evaluation_name,
+                   create_time: google_time_stamp,
+                   evaluation_spec: evaluation_spec)
+          end
+          let(:empty_quality_metrics_response) do
+            {
+              "doc_recall" => {},
+              "doc_precision" => {},
+              "doc_ndcg" => {},
+              "page_recall" => {},
+              "page_ndcg" => {},
+            }
+          end
+
+          it "raises EmptyQualityMetricsError" do
+            expect { evaluation.quality_metrics }.to raise_error(DiscoveryEngine::Quality::EmptyQualityMetricsError, "Evaluation of clickstream 2025-10 returned empty quality_metrics key")
+          end
+        end
       end
 
       context "when the evaluation completes and has a state of :FAILED" do
