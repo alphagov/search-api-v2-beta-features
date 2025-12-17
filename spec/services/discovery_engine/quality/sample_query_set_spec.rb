@@ -7,11 +7,20 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
     allow(DiscoveryEngine::Clients).to receive_messages(sample_query_set_service: sample_query_set_service_stub, sample_query_service: sample_query_service_stub)
   end
 
-  let(:sample_query_set_service_stub) { double("sample_query_set_service", create_sample_query_set: nil) }
+  let(:response_object) do
+    {
+      "name": name,
+      "displayName": "clickstream 2025-10",
+      "createTime": "a-time-stamp",
+    }
+  end
+
+  let(:sample_query_set_service_stub) { double("sample_query_set_service", create_sample_query_set: nil, get_sample_query_set: response_object) }
   let(:sample_query_service_stub) { double("sample_query_service", import_sample_queries: operation_object) }
   let(:operation_object) { double("operation", wait_until_done!: true, error?: false) }
   let(:table_id) { "clickstream" }
   let(:month_label) { :this_month }
+  let(:name) { "[location]/sampleQuerySets/clickstream_2025-10" }
 
   describe "#create_and_import_queries" do
     context "when the month label ':this_month' is provided" do
@@ -30,7 +39,7 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
         )
 
         expect(sample_query_service_stub).to have_received(:import_sample_queries).with(
-          parent: "[location]/sampleQuerySets/clickstream_2025-10",
+          parent: name,
           bigquery_source: {
             dataset_id: "automated_evaluation_input",
             table_id: "clickstream",
@@ -64,6 +73,7 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
             .with(anything)
             .and_raise(Google::Cloud::AlreadyExistsError)
 
+          allow(erroring_service).to receive(:get_sample_query_set)
           allow(Rails.logger).to receive(:warn)
         end
 
@@ -72,6 +82,28 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
           expect(erroring_service).to have_received(:create_sample_query_set).exactly(1).times
           expect(Rails.logger).to have_received(:warn)
             .with("SampleQuerySet clickstream 2025-10 already exists. Skipping query set creation...")
+        end
+      end
+
+      context "when the sample query set is not created" do
+        let(:erroring_service) { double("sample_query_set") }
+
+        before do
+          allow(DiscoveryEngine::Clients).to receive(:sample_query_set_service).and_return(erroring_service)
+          allow(erroring_service).to receive(:create_sample_query_set).with(anything)
+
+          allow(erroring_service)
+            .to receive(:get_sample_query_set)
+            .with(name: name)
+            .and_raise(Google::Cloud::NotFoundError)
+
+          allow(Rails.logger).to receive(:error)
+        end
+
+        it "raises an error" do
+          expect { sample_query_set.create_and_import_queries }.to raise_error("Google::Cloud::NotFoundError")
+          expect(erroring_service).to have_received(:get_sample_query_set).exactly(1).times
+          expect(Rails.logger).to have_received(:error).with("SampleQuerySet clickstream 2025-10 was not created successfully")
         end
       end
     end
@@ -115,7 +147,7 @@ RSpec.describe DiscoveryEngine::Quality::SampleQuerySet do
     subject(:sample_query_set) { described_class.new(month_label:, table_id:) }
 
     it "returns the fully qualified GCP name of the sample query set" do
-      expect(sample_query_set.name).to eq("[location]/sampleQuerySets/clickstream_2025-10")
+      expect(sample_query_set.name).to eq(name)
     end
   end
 
