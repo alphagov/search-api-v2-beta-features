@@ -11,7 +11,10 @@ module DiscoveryEngine::Quality
     end
 
     def quality_metrics
-      fetched_evaluation.quality_metrics.to_h
+      @quality_metrics_hash = fetched_evaluation.quality_metrics.to_h
+      raise EmptyQualityMetricsError, sample_set.display_name if quality_metrics_hash_empty?
+
+      @quality_metrics_hash
     end
 
     # evaluation_name and fetched_evaluation.name are equivalent, but calling fetched_evaluation
@@ -146,6 +149,10 @@ module DiscoveryEngine::Quality
 
     def parent
       @parent ||= Rails.application.config.discovery_engine_default_location_name
+    end
+
+    def quality_metrics_hash_empty?
+      @quality_metrics_hash.values.all?(&:empty?)
     end
   end
 end
