@@ -2,11 +2,11 @@
 
 We use Discovery Engine's in-built evaluations feature to measure the quality and relevance of search results. This allows us to:
 
-- [Monitor search quality](#How-evaluations-are-monitored) with automated alerts if relevance scores drop unexpectedly.
+- [Monitor search quality](#how-evaluations-are-monitored) with automated alerts if relevance scores drop unexpectedly.
 
 - Compare versions of the Discovery Engine search engine so that we can test out new configurations to improve search results.
 
-Evaluations rely on 'judgement lists' (known as ['sample query sets'][sample-query-sets] in Discovery Engine terminology). These are sets of search queries paired with targets and their ratings, which indicate how relevant specific results are for those queries. We use three sets of judgement lists to create evaluations. When evaluations are run, point-in-time search results are compared to the sample query sets to create [scores](#How-evaluations-are-scored), which can be tracked over time.
+Evaluations rely on 'judgement lists' (known as ['sample query sets'][sample-query-sets] in Discovery Engine terminology). These are sets of search queries paired with targets and their ratings, which indicate how relevant specific results are for those queries. We use three sets of judgement lists to create evaluations. When evaluations are run, point-in-time search results are compared to the sample query sets to create [scores](#how-evaluations-are-scored), which can be tracked over time.
 
 ## A note on terminology
 
@@ -136,7 +136,7 @@ When first created, the crontasks for running evaluations had the following sche
 
 - Every weekday at 10am, 12pm, 2pm, 4pm GMT (which is 11am, 1pm, 3pm and 5pm BST) we run evaluations of the binary sample query sets.
 
-A gap of two hours was added between each type of evaluation run to stop them from clashing. Only one evaluation can be run at time, and each crontask runs two evaluations, one for [this month and last month](#This-month-and-last-month). Each evaluation takes approximately 20-25 minutes to run on average.
+A gap of two hours was added between each type of evaluation run to stop them from clashing. Only one evaluation can be run at time, and each crontask runs two evaluations, one for [this month and last month](#this-month-and-last-month). Each evaluation takes approximately 20-25 minutes to run on average.
 
 See [`govuk-helm-charts`][govuk-helm-charts] for the current schedule.
 
