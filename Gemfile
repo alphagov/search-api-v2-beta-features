@@ -20,8 +20,8 @@ end
 
 group :development, :test do
   gem "brakeman", require: false
-  gem "byebug"
   gem "govuk_test"
+  gem "pry-byebug"
   gem "rspec-rails"
   gem "rubocop-govuk"
 end
