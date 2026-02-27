@@ -116,8 +116,57 @@ Manually created and curated judgement lists. The explicit judgements are based 
 
 This diagram shows the end-to-end process of how an evaluation is run, including how the data is prepared before the evaluation and how results are processed afterwards:
 
-![Evaluations sequence diagram](images/evaluations-sequence.png)
-This diagram is a screenshot from a live [Mural board][evaluations-sequence-mural-board].
+```mermaid
+sequenceDiagram
+    participant GOV.UK
+    participant GA4
+    participant Dataform
+    participant Big Query
+    participant Discovery Engine
+    participant Search API V2
+    participant GCP Bucket
+    participant Prometheus
+    activate GOV.UK
+    activate GA4
+    Note left of GOV.UK: User interaction data on GOV.UK is collected<br/>using Google Analytics.
+    GOV.UK->>GA4: User interaction data
+    deactivate GA4
+    deactivate GOV.UK
+GOV.UK-->Prometheus: 
+    Dataform->>+GA4: Data request
+activate Dataform
+Note left of GOV.UK: Dataform runs SQL queries at 1am on the 1st<br/>of each month to create implicit "judgement<br/>lists" ('binary' and 'clickstream'), from 3<br/>months of user interaction data, labelled with<br/>a "partition time" of the start of the month<br/>the query is run during.
+GA4->>-Dataform: Data from 'partitioned<br/>flattened events table'
+Note left of GOV.UK: Example: on 1st November the judgement list<br/>includes data from August, September and<br/>October.
+activate Big Query
+Dataform->>Big Query: Judgement lists
+deactivate Dataform
+deactivate Big Query
+GOV.UK-->Prometheus:
+Search API V2->>+Discovery Engine: Request to create (empty)<br/>sample query set
+activate Search API V2
+Note left of GOV.UK: A rake task is run at 2am on the first day of<br/>each month to create and import queries into a<br/>single "sample query set", labelled with a<br/>"partition date" of the start of the month the<br/>query is run during, matching the relevant<br/>judgement list.
+Search API V2->>Discovery Engine: Request to import queries<br/>into sample query set<br/>(from BigQuery)
+Note over Discovery Engine,Search API V2: Request body includes<br/>"partition date", which is<br/>used to identify the<br/>queries to import
+Discovery Engine->>+Big Query: Data request
+Note left of GOV.UK: Example: on 1st November we create a sample<br/>query set with a partition date of 1st November<br/>which contains user data from August,<br/>September and October.
+deactivate Search API V2
+Big Query->>-Discovery Engine: Judgement lists
+deactivate Discovery Engine
+GOV.UK-->Prometheus:
+Search API V2->>+Discovery Engine: Request to create an<br/>evaluation for a specified<br/>sample query set
+activate Search API V2
+Note left of GOV.UK: Evaluations are run on a regular basis via a<br/>scheduled rake task (once per day for<br/>'clickstream', multiple times per (working) day<br/>for 'binary'), which evaluate point-in-time<br/>search results against two sample query sets:<br/>one labelled with a partition date of the start of<br/>the current month, and the other labelled with<br/>a partition date of the start of last month.
+Discovery Engine->>-Discovery Engine: Discovery Engine search<br/>results from queries in<br/>sample query set are<br/>checked against sample<br/>query set targets
+Note left of GOV.UK: Example: every day in November, we run<br/>evaluations against two sample query sets:<br/>one with a partition date of 1st November<br/>(which contains user data from August,<br/>September and October) and the other with a<br/>partition date of 1st October (which contains<br/>user data from July, August and September).
+Search API V2->>+Discovery Engine: Request to get evaluation<br/>results (with wait)
+Discovery Engine->>-Search API V2: Evaluation metrics
+Search API V2->>+GCP Bucket: Detailed metrics
+deactivate GCP Bucket
+Search API V2->>+Prometheus: Quality metrics
+deactivate Prometheus
+deactivate Search API V2
+```
 
 The overall process involves:
 
