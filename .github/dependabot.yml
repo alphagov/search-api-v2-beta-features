@@ -4,15 +4,28 @@ updates:
   directory: "/"
   schedule:
     interval: daily
+  cooldown:
+    default-days: 3
+    exclude:
+      - govuk_app_config
+      - govuk_test
+      - plek
+      - rubocop-govuk
   open-pull-requests-limit: 10
+
 - package-ecosystem: docker
   directory: /
   schedule:
     interval: weekly
+  cooldown:
+    default-days: 3
   ignore:
     - dependency-name: ruby
+
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
     interval: daily
+  cooldown:
+    default-days: 3
   open-pull-requests-limit: 10
