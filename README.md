@@ -3,14 +3,14 @@
 This app is to experiment with beta features from the Google `google-cloud-discovery_engine-v1beta` gem for [search-api-v2](https://github.com/alphagov/search-api-v2). This gem is incompatible with the main
 client (`google-cloud-discovery_engine`) and needs to be installed in it's own app.
 
-Currently this app runs evaluations for [GOV.UK site search](https://www.gov.uk/search/all) using the [Google Vertex AI Search evaluations](https://cloud.google.com/generative-ai-app-builder/docs/evaluate-search-quality) framework.
+Currently this app runs evaluations for [GOV.UK site search](https://www.gov.uk/search/all) using the [Google Cloud Discovery Engine evaluations](https://cloud.google.com/generative-ai-app-builder/docs/evaluate-search-quality) framework.
 
 ## Nomenclature
 
-### "Vertex" vs "Discovery Engine"
-The marketing name of the search product we use (Google Vertex AI Search) has undergone several changes, and some concepts have different naming in the Google Cloud Platform UI compared to the actual underlying APIs themselves.
+### "Agent Search" vs "Discovery Engine"
+The marketing name of the search product we use (Google Cloud Agent Search) has undergone several changes, and some concepts have different naming in the Google Cloud Platform UI compared to the actual underlying APIs themselves.
 
-We have chosen to exclusively use the more stable API naming (Discovery Engine, engine instead of app, etc.) throughout the codebase and documentation to avoid having to rename things as the product reached general availability, but you may see the terms "Vertex" or "Vertex Search" as well as some other marketing terms used in some project artefacts.
+We prefer to use the more stable API naming (Discovery Engine, engine instead of app, etc.) throughout the codebase and documentation to avoid having to rename things as the product reached general availability, but you may see the terms "Agent Search" as well as some other marketing terms used in some project artefacts.
 
 ## Technical documentation
 
@@ -50,7 +50,7 @@ Note that when rake tasks are run locally, no metrics will be pushed to Promethe
 
 ### Further documentation
 
-[Google Vertex docs](https://cloud.google.com/generative-ai-app-builder/docs/introduction)
+[Google Cloud Agent Search docs](https://cloud.google.com/generative-ai-app-builder/docs/introduction)
 
 ## Licence
 
