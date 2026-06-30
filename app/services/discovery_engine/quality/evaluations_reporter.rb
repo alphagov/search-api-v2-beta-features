@@ -1,13 +1,17 @@
 module DiscoveryEngine::Quality
   class EvaluationsReporter
     # date_string format is "2026-02"
-    def fetch_and_format(date_string: nil)
+    def fetch_and_format(date_string: nil, states: [])
       evaluations_grouped_by_state = {
         FAILED: [],
         SUCCEEDED: [],
         PENDING: [],
         RUNNING: [],
       }
+
+      if states.present?
+        evaluations_grouped_by_state.select! { |k, _v| states.include?(k) }
+      end
 
       evaluation_service.list_evaluations(parent:).each do |evaluation|
         next if date_string && !formatted_date(evaluation.create_time).include?(date_string)

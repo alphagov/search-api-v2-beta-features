@@ -108,5 +108,24 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
         expect { evaluation_reporter.fetch_and_format(date_string:) }.to output(expected_output).to_stdout
       end
     end
+
+    context "when a state is passed in" do
+      it "only prints out evaluations with a matching state" do
+        expected_output = <<~HEREDOC
+          FAILED
+          ==============
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
+          Start time: 2025-09-17 08:00:06
+
+          PENDING
+          ==============
+        HEREDOC
+
+        expect {
+          evaluation_reporter.fetch_and_format(states: %i[FAILED PENDING])
+        }.to output(expected_output).to_stdout
+      end
+    end
   end
 end
