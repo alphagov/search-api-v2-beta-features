@@ -16,6 +16,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
   end
 
   let(:clickstream_evaluation_name) { "projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9" }
+  let(:another_clickstream_evaluation_name) { "projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-123456" }
 
   let(:clickstream_set_name) { "projects/123456/locations/global/sampleQuerySets/clickstream_2025-12" }
 
@@ -31,6 +32,8 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
   let(:timestamp_two) { double("Google::Protobuf::Timestamp", seconds: 1_763_536_521, nanos: 507_884_722) }
   let(:timestamp_three) { double("Google::Protobuf::Timestamp", seconds: 1_758_096_006, nanos: 123_415_000) }
   let(:timestamp_four) { double("Google::Protobuf::Timestamp", seconds: 1_758_097_403, nanos: 880_911_074) }
+  let(:timestamp_five) { double("Google::Protobuf::Timestamp", seconds: 1_782_468_026, nanos: 497_828_000) }
+  let(:timestamp_six) { double("Google::Protobuf::Timestamp", seconds: 1_782_468_035, nanos: 806_111_919) }
 
   let(:evaluation_success) do
     double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation",
@@ -52,13 +55,23 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
            end_time: timestamp_four)
   end
 
+  let(:evaluation_failure_two) do
+    double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation",
+           name: another_clickstream_evaluation_name,
+           evaluation_spec: clickstream_evaluation_spec,
+           state: :FAILED,
+           error: { code: 13, message: "Internal error encountered. Please try again. If the issue persists, please contact our support team." },
+           create_time: timestamp_five,
+           end_time: timestamp_six)
+  end
+
   let(:mock_client) { double(::Google::Cloud::DiscoveryEngine::V1beta::EvaluationService::Client) }
   let(:mock_list_evaluations_response) { double(Gapic::PagedEnumerable) }
 
   before do
     allow(DiscoveryEngine::Clients).to receive(:evaluation_service).and_return(mock_client)
     allow(mock_client).to receive(:list_evaluations).and_return(mock_list_evaluations_response)
-    allow(mock_list_evaluations_response).to receive(:each).and_yield(evaluation_success).and_yield(evaluation_failure)
+    allow(mock_list_evaluations_response).to receive(:each).and_yield(evaluation_success).and_yield(evaluation_failure).and_yield(evaluation_failure_two)
   end
 
   describe ".fetch_and_format" do
@@ -70,6 +83,10 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
           Start time: 2025-09-17 08:00:06
+
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-123456
+          Start time: 2026-06-26 10:00:26
 
           SUCCEEDED
           ==============
@@ -117,6 +134,10 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
           Start time: 2025-09-17 08:00:06
+
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-123456
+          Start time: 2026-06-26 10:00:26
 
           PENDING
           ==============

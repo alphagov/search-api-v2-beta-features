@@ -28,11 +28,11 @@ module DiscoveryEngine::Quality
   private
 
     def printout_evaluations(evaluations_hash)
-      evaluations_hash.each do |state, array_of_evaluations|
+      evaluations_hash.each do |state, evaluations|
         puts state
         puts "=============="
 
-        array_of_evaluations.each do |evaluation|
+        sorted(evaluations).each do |evaluation|
           sqs = sample_query_set_name(evaluation)
           name = evaluation.name
           time = formatted_date(evaluation.create_time)
@@ -41,6 +41,12 @@ module DiscoveryEngine::Quality
           puts "Start time: #{time}"
           puts ""
         end
+      end
+    end
+
+    def sorted(evaluations)
+      evaluations.sort do |a, b|
+        [sample_query_set_name(a), formatted_date(a.create_time)] <=> [sample_query_set_name(b), formatted_date(b.create_time)]
       end
     end
 
