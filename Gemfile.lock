@@ -696,6 +696,7 @@ DEPENDENCIES
   climate_control
   google-cloud-discovery_engine-v1beta
   google-cloud-storage
+  googleauth (>= 1.16.0)
   govuk_app_config
   govuk_test
   grpc_mock
