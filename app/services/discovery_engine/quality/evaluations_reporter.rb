@@ -28,11 +28,20 @@ module DiscoveryEngine::Quality
         array_of_evaluations.each do |evaluation|
           sqs = sample_query_set_name(evaluation)
           name = evaluation.name
+          time = formatted_date(evaluation.create_time)
           puts "Sample query set: #{sqs}"
           puts "Evaluation: #{name}"
+          puts "Start time: #{time}"
           puts ""
         end
       end
+    end
+
+    def formatted_date(google_time_stamp)
+      data = { nanos: google_time_stamp.nanos, seconds: google_time_stamp.seconds }
+      Google::Protobuf::Timestamp.new(data)
+        .to_time
+        .strftime("%Y-%m-%d %H:%M:%S")
     end
 
     def sample_query_set_name(evaluation)

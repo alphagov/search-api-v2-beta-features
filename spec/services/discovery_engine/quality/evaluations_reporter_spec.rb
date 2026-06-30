@@ -27,12 +27,19 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
     double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation::EvaluationSpec", query_set_spec: clickstream_query_set_spec)
   end
 
+  let(:timestamp_one) { double("Google::Protobuf::Timestamp", seconds: 1_763_535_606, nanos: 700_845_000) }
+  let(:timestamp_two) { double("Google::Protobuf::Timestamp", seconds: 1_763_536_521, nanos: 507_884_722) }
+  let(:timestamp_three) { double("Google::Protobuf::Timestamp", seconds: 1_758_096_006, nanos: 123_415_000) }
+  let(:timestamp_four) { double("Google::Protobuf::Timestamp", seconds: 1_758_097_403, nanos: 880_911_074) }
+
   let(:evaluation_success) do
     double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation",
            name: binary_evaluation_name,
            evaluation_spec: binary_evaluation_spec,
            state: :SUCCEEDED,
-           error: {})
+           error: {},
+           create_time: timestamp_one,
+           end_time: timestamp_two)
   end
 
   let(:evaluation_failure) do
@@ -40,7 +47,9 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
            name: clickstream_evaluation_name,
            evaluation_spec: clickstream_evaluation_spec,
            state: :FAILED,
-           error: { code: 13, message: "Internal error encountered. Please try again. If the issue persists, please contact our support team." })
+           error: { code: 13, message: "Internal error encountered. Please try again. If the issue persists, please contact our support team." },
+           create_time: timestamp_three,
+           end_time: timestamp_four)
   end
 
   let(:mock_client) { double(::Google::Cloud::DiscoveryEngine::V1beta::EvaluationService::Client) }
@@ -59,11 +68,13 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
         ==============
         Sample query set: clickstream_2025-12
         Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
+        Start time: 2025-09-17 08:00:06
 
         SUCCEEDED
         ==============
         Sample query set: binary_2025-12
         Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3
+        Start time: 2025-11-19 07:00:06
 
         PENDING
         ==============
