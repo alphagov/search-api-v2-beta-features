@@ -1,7 +1,14 @@
 module DiscoveryEngine::Quality
   class EvaluationsReporter
     # date_string format is "2026-02"
-    def fetch_and_format(date_string: nil, states: [])
+    def initialize(date_string: nil, states: [])
+      @date_string = date_string
+      @states = states
+    end
+
+    attr_reader :date_string, :states
+
+    def fetch_and_format
       evaluations_grouped_by_state = {
         FAILED: [],
         SUCCEEDED: [],

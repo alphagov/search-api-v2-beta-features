@@ -1,7 +1,7 @@
 require "google/cloud/discovery_engine/v1beta"
 
 RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
-  let(:evaluation_reporter) { described_class.new }
+  let(:evaluation_reporter) { described_class }
 
   let(:binary_evaluation_name) { "projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3" }
 
@@ -100,7 +100,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           ==============
         HEREDOC
 
-        expect { evaluation_reporter.fetch_and_format }.to output(expected_output).to_stdout
+        expect { evaluation_reporter.new.fetch_and_format }.to output(expected_output).to_stdout
       end
     end
 
@@ -122,7 +122,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
         HEREDOC
 
         date_string = "2025-09"
-        expect { evaluation_reporter.fetch_and_format(date_string:) }.to output(expected_output).to_stdout
+        expect { evaluation_reporter.new(date_string:).fetch_and_format }.to output(expected_output).to_stdout
       end
     end
 
@@ -144,7 +144,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
         HEREDOC
 
         expect {
-          evaluation_reporter.fetch_and_format(states: %i[FAILED PENDING])
+          evaluation_reporter.new(states: %i[FAILED PENDING]).fetch_and_format
         }.to output(expected_output).to_stdout
       end
     end
