@@ -1,0 +1,50 @@
+module DiscoveryEngine::Quality
+  class EvaluationsReporter
+    def fetch_and_format
+      evaluations_grouped_by_state = {
+        FAILED: [],
+        SUCCEEDED: [],
+        PENDING: [],
+        RUNNING: [],
+      }
+
+      evaluation_service.list_evaluations(parent:).each do |evaluation|
+        evaluations_grouped_by_state.each_key do |state|
+          if evaluation.state == state
+            evaluations_grouped_by_state[state] << evaluation
+          end
+        end
+      end
+      printout_evaluations(evaluations_grouped_by_state)
+    end
+
+  private
+
+    def printout_evaluations(evaluations_hash)
+      evaluations_hash.each do |state, array_of_evaluations|
+        puts state
+        puts "=============="
+
+        array_of_evaluations.each do |evaluation|
+          sqs = sample_query_set_name(evaluation)
+          name = evaluation.name
+          puts "Sample query set: #{sqs}"
+          puts "Evaluation: #{name}"
+          puts ""
+        end
+      end
+    end
+
+    def sample_query_set_name(evaluation)
+      evaluation.evaluation_spec.query_set_spec.sample_query_set.split("/").last
+    end
+
+    def evaluation_service
+      @evaluation_service ||= DiscoveryEngine::Clients.evaluation_service
+    end
+
+    def parent
+      @parent ||= Rails.application.config.discovery_engine_default_location_name
+    end
+  end
+end

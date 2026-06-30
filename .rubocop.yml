@@ -14,6 +14,11 @@ inherit_mode:
 # can't verify.
 RSpec/VerifiedDoubles:
   Enabled: false
+
+# Rake task to output a report using "puts", rather than fill up logs.
+Rails/Output:
+  Exclude:
+    - 'app/services/discovery_engine/quality/evaluations_reporter.rb'
 # **************************************************************
 # TRY NOT TO ADD OVERRIDES IN THIS FILE
 #
