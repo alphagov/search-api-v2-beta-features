@@ -62,27 +62,51 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
   end
 
   describe ".fetch_and_format" do
-    it "fetches all pages of results from the evaluations service" do
-      expected_output = <<~HEREDOC
-        FAILED
-        ==============
-        Sample query set: clickstream_2025-12
-        Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
-        Start time: 2025-09-17 08:00:06
+    context "when no date string is passed in" do
+      it "prints out all pages of results from the evaluation service" do
+        expected_output = <<~HEREDOC
+          FAILED
+          ==============
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
+          Start time: 2025-09-17 08:00:06
 
-        SUCCEEDED
-        ==============
-        Sample query set: binary_2025-12
-        Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3
-        Start time: 2025-11-19 07:00:06
+          SUCCEEDED
+          ==============
+          Sample query set: binary_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3
+          Start time: 2025-11-19 07:00:06
 
-        PENDING
-        ==============
-        RUNNING
-        ==============
-      HEREDOC
+          PENDING
+          ==============
+          RUNNING
+          ==============
+        HEREDOC
 
-      expect { evaluation_reporter.fetch_and_format }.to output(expected_output).to_stdout
+        expect { evaluation_reporter.fetch_and_format }.to output(expected_output).to_stdout
+      end
+    end
+
+    context "when a 'YYYY-MM' date string is passed in" do
+      it "only prints out evaluations created during the year and month specified" do
+        expected_output = <<~HEREDOC
+          FAILED
+          ==============
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
+          Start time: 2025-09-17 08:00:06
+
+          SUCCEEDED
+          ==============
+          PENDING
+          ==============
+          RUNNING
+          ==============
+        HEREDOC
+
+        date_string = "2025-09"
+        expect { evaluation_reporter.fetch_and_format(date_string:) }.to output(expected_output).to_stdout
+      end
     end
   end
 end
