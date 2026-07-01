@@ -1,6 +1,6 @@
 namespace :report do
   # Outputs a list of evaluations of GOV.UK site search quality fetched from the Google DiscoveryEngine API's evaluations endpoint.
-  # The task can be called with no arguments, or with two arguments.
+  #  The task can be called with no arguments, or with two arguments.
   # Example usage:
   # rake report:evaluations['2026-06','failed pending'] will fetch pending and failed evaluations created in June 2026.
   # rake report:evaluations['','failed pending'] will fetch all failed and pending evaluations

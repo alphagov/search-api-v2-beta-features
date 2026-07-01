@@ -46,6 +46,7 @@ module DiscoveryEngine::Quality
           puts "Sample query set: #{sqs}"
           puts "Evaluation: #{name}"
           puts "Start time: #{time}"
+          puts "No quality metrics!" if missing_quality_metrics?(evaluation)
           puts ""
         end
       end
@@ -66,6 +67,12 @@ module DiscoveryEngine::Quality
 
     def sample_query_set_name(evaluation)
       evaluation.evaluation_spec.query_set_spec.sample_query_set.split("/").last
+    end
+
+    def missing_quality_metrics?(evaluation)
+      return unless evaluation.state == :SUCCEEDED
+
+      evaluation.quality_metrics.to_h.values.all?(&:empty?)
     end
 
     def evaluation_service

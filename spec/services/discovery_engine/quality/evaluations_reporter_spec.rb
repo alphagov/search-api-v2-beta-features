@@ -4,6 +4,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
   let(:evaluation_reporter) { described_class }
 
   let(:binary_evaluation_name) { "projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3" }
+  let(:another_binary_evaluation_name) { "projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b34123456" }
 
   let(:binary_set_name) { "projects/123456/locations/global/sampleQuerySets/binary_2025-12" }
 
@@ -28,6 +29,8 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
     double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation::EvaluationSpec", query_set_spec: clickstream_query_set_spec)
   end
 
+  let(:quality_metrics) { double("Google::Cloud::DiscoveryEngine::V1beta::QualityMetrics", to_h: { "anything": "anything" }) }
+
   let(:timestamp_one) { double("Google::Protobuf::Timestamp", seconds: 1_763_535_606, nanos: 700_845_000) }
   let(:timestamp_two) { double("Google::Protobuf::Timestamp", seconds: 1_763_536_521, nanos: 507_884_722) }
   let(:timestamp_three) { double("Google::Protobuf::Timestamp", seconds: 1_758_096_006, nanos: 123_415_000) }
@@ -40,9 +43,21 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
            name: binary_evaluation_name,
            evaluation_spec: binary_evaluation_spec,
            state: :SUCCEEDED,
+           quality_metrics: quality_metrics,
            error: {},
            create_time: timestamp_one,
            end_time: timestamp_two)
+  end
+
+  let(:evaluation_success_two) do
+    double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation",
+           name: another_binary_evaluation_name,
+           evaluation_spec: binary_evaluation_spec,
+           state: :SUCCEEDED,
+           quality_metrics: {},
+           error: {},
+           create_time: timestamp_three,
+           end_time: timestamp_four)
   end
 
   let(:evaluation_failure) do
@@ -71,7 +86,11 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
   before do
     allow(DiscoveryEngine::Clients).to receive(:evaluation_service).and_return(mock_client)
     allow(mock_client).to receive(:list_evaluations).and_return(mock_list_evaluations_response)
-    allow(mock_list_evaluations_response).to receive(:each).and_yield(evaluation_success).and_yield(evaluation_failure).and_yield(evaluation_failure_two)
+    allow(mock_list_evaluations_response).to receive(:each)
+      .and_yield(evaluation_success)
+      .and_yield(evaluation_success_two)
+      .and_yield(evaluation_failure)
+      .and_yield(evaluation_failure_two)
   end
 
   describe ".fetch_and_format" do
@@ -90,6 +109,11 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
 
           SUCCEEDED
           ==============
+          Sample query set: binary_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b34123456
+          Start time: 2025-09-17 08:00:06
+          No quality metrics!
+
           Sample query set: binary_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3
           Start time: 2025-11-19 07:00:06
@@ -115,6 +139,11 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
 
           SUCCEEDED
           ==============
+          Sample query set: binary_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b34123456
+          Start time: 2025-09-17 08:00:06
+          No quality metrics!
+
           PENDING
           ==============
           RUNNING
