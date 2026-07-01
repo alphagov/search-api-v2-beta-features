@@ -29,6 +29,8 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
     double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation::EvaluationSpec", query_set_spec: clickstream_query_set_spec)
   end
 
+  let(:pending_evaluation_name) { "projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-891011" }
+
   let(:quality_metrics) { double("Google::Cloud::DiscoveryEngine::V1beta::QualityMetrics", to_h: { "anything": "anything" }) }
 
   let(:timestamp_one) { double("Google::Protobuf::Timestamp", seconds: 1_763_535_606, nanos: 700_845_000) }
@@ -80,6 +82,15 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
            end_time: timestamp_six)
   end
 
+  let(:evaluation_pending) do
+    double("Google::Cloud::DiscoveryEngine::V1beta::Evaluation",
+           name: pending_evaluation_name,
+           evaluation_spec: clickstream_evaluation_spec,
+           state: :PENDING,
+           error: { code: 13, message: "Internal error encountered. Please try again. If the issue persists, please contact our support team." },
+           create_time: timestamp_five)
+  end
+
   let(:mock_client) { double(::Google::Cloud::DiscoveryEngine::V1beta::EvaluationService::Client) }
   let(:mock_list_evaluations_response) { double(Gapic::PagedEnumerable) }
 
@@ -91,6 +102,7 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
       .and_yield(evaluation_success_two)
       .and_yield(evaluation_failure)
       .and_yield(evaluation_failure_two)
+      .and_yield(evaluation_pending)
   end
 
   describe ".fetch_and_format" do
@@ -102,24 +114,36 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
           Start time: 2025-09-17 08:00:06
+          End time: 2025-09-17 08:23:23
+          Duration: 23.296 mins
 
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-123456
           Start time: 2026-06-26 10:00:26
+          End time: 2026-06-26 10:00:35
+          Duration: 0.155 mins
 
           SUCCEEDED
           ==============
           Sample query set: binary_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b34123456
           Start time: 2025-09-17 08:00:06
+          End time: 2025-09-17 08:23:23
+          Duration: 23.296 mins
           No quality metrics!
 
           Sample query set: binary_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b3497ebf3
           Start time: 2025-11-19 07:00:06
+          End time: 2025-11-19 07:15:21
+          Duration: 15.247 mins
 
           PENDING
           ==============
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-891011
+          Start time: 2026-06-26 10:00:26
+
           RUNNING
           ==============
         HEREDOC
@@ -136,12 +160,16 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
           Start time: 2025-09-17 08:00:06
+          End time: 2025-09-17 08:23:23
+          Duration: 23.296 mins
 
           SUCCEEDED
           ==============
           Sample query set: binary_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0038a998-7424-4fa4-ac3c-f70b34123456
           Start time: 2025-09-17 08:00:06
+          End time: 2025-09-17 08:23:23
+          Duration: 23.296 mins
           No quality metrics!
 
           PENDING
@@ -163,13 +191,21 @@ RSpec.describe DiscoveryEngine::Quality::EvaluationsReporter do
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-66f4235ba4f9
           Start time: 2025-09-17 08:00:06
+          End time: 2025-09-17 08:23:23
+          Duration: 23.296 mins
 
           Sample query set: clickstream_2025-12
           Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-123456
           Start time: 2026-06-26 10:00:26
+          End time: 2026-06-26 10:00:35
+          Duration: 0.155 mins
 
           PENDING
           ==============
+          Sample query set: clickstream_2025-12
+          Evaluation: projects/123456/locations/global/evaluations/0392a80d-4c9b-433a-93a8-891011
+          Start time: 2026-06-26 10:00:26
+
         HEREDOC
 
         expect {

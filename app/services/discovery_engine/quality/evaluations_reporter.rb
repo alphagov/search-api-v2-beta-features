@@ -42,10 +42,15 @@ module DiscoveryEngine::Quality
         sorted(evaluations).each do |evaluation|
           sqs = sample_query_set_name(evaluation)
           name = evaluation.name
-          time = formatted_date(evaluation.create_time)
+          start_time = evaluation.try(:create_time)
+          end_time = evaluation.try(:end_time)
+          duration = formatted_duration(evaluation) if start_time && end_time
+
           puts "Sample query set: #{sqs}"
           puts "Evaluation: #{name}"
-          puts "Start time: #{time}"
+          puts "Start time: #{formatted_date(start_time)}" if start_time
+          puts "End time: #{formatted_date(end_time)}" if end_time
+          puts "Duration: #{duration} mins" if duration
           puts "No quality metrics!" if missing_quality_metrics?(evaluation)
           puts ""
         end
@@ -63,6 +68,13 @@ module DiscoveryEngine::Quality
       Google::Protobuf::Timestamp.new(data)
         .to_time
         .strftime("%Y-%m-%d %H:%M:%S")
+    end
+
+    def formatted_duration(evaluation)
+      time_start = Time.zone.at(evaluation.create_time.seconds, evaluation.create_time.nanos, :nsec)
+      time_end = Time.zone.at(evaluation.end_time.seconds, evaluation.end_time.nanos, :nsec)
+      time_difference_seconds = time_end - time_start
+      (time_difference_seconds / 60.0).round(3)
     end
 
     def sample_query_set_name(evaluation)
