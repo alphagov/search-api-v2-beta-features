@@ -132,7 +132,7 @@ module DiscoveryEngine::Quality
 
       while (e = get_evaluation(name))
         return e if e.state == :SUCCEEDED
-        raise FailedEvaluationError, sample_set.display_name if e.state == :FAILED
+        raise FailedEvaluationError, failed_evaluation_error_message(e) if e.state == :FAILED
 
         Rails.logger.info("Still waiting for evaluation to complete...")
         Kernel.sleep(WAIT_TIME)
@@ -153,6 +153,10 @@ module DiscoveryEngine::Quality
 
     def quality_metrics_hash_empty?
       @quality_metrics_hash.values.all?(&:empty?)
+    end
+
+    def failed_evaluation_error_message(evaluation)
+      "Evaluation of #{sample_set.display_name} failed with error: #{evaluation.error['message']}"
     end
   end
 end
