@@ -1,14 +1,14 @@
 module DiscoveryEngine::Quality
   class FailedEvaluationError < StandardError
-    attr_reader :sample_query_set_name
+    attr_reader :error_message
 
-    def initialize(sample_query_set_name)
+    def initialize(error_message)
       super
-      @sample_query_set_name = sample_query_set_name
+      @error_message = error_message
     end
 
     def message
-      "Evaluation of #{sample_query_set_name} failed"
+      @error_message
     end
   end
 end

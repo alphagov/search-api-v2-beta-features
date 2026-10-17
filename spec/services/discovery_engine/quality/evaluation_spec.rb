@@ -207,14 +207,27 @@ RSpec.describe DiscoveryEngine::Quality::Evaluation do
       end
 
       context "when the evaluation completes and has a state of :FAILED" do
-        before do
-          allow(new_evaluation).to receive(:state).and_return(:FAILED)
+        let(:evaluation_service) { double("evaluation_service", create_evaluation: operation, get_evaluation: failed_evaluation) }
+        let(:failed_evaluation_name) { "/evaluations/3" }
+        let(:failed_evaluation) do
+          double("evaluation",
+                 state: :FAILED,
+                 name: failed_evaluation_name,
+                 create_time: google_time_stamp,
+                 evaluation_spec: evaluation_spec,
+                 error: error_message)
+        end
+        let(:error_message) do
+          {
+            "code" => 13,
+            "message" => "readable error message",
+          }
         end
 
         it "raises FailedEvaluationError" do
           expect { evaluation.quality_metrics }.to raise_error(
             DiscoveryEngine::Quality::FailedEvaluationError,
-            "Evaluation of clickstream 2025-10 failed",
+            "Evaluation of clickstream 2025-10 failed with error: readable error message",
           )
         end
       end
