@@ -706,6 +706,7 @@ DEPENDENCIES
   googleauth (>= 1.16.0)
   govuk_app_config
   govuk_test
+  grpc (>= 1.85.0)
   grpc_mock
   json_schemer
   plek
